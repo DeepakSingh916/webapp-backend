@@ -18,7 +18,7 @@ def login():
 
 @app.route("/home", methods=["GET"])
 def home():
-    return jsonify({"message": "Welcome to webapp"})
+    return jsonify({"message": "Welcome to web application"})
 
 if __name__ == "__main__":
     app.run(debug=True)
