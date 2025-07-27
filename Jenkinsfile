@@ -2,15 +2,16 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = '/home/ubuntu/backend-flask'  // Adjust if needed
+        PROJECT_DIR = "${env.WORKSPACE}/webapp-backend"
         VENV_DIR = "${PROJECT_DIR}/venv"
+        REPO_URL = 'https://github.com/DeepakSingh916/backend-flask.git'
     }
 
     stages {
         stage('Clone Repo') {
             steps {
                 sh "rm -rf $PROJECT_DIR"
-                sh "git clone https://github.com/DeepakSingh916/backend-flask.git $PROJECT_DIR"
+                sh "git clone $REPO_URL $PROJECT_DIR"
             }
         }
 
