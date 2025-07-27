@@ -4,7 +4,7 @@ pipeline {
     environment {
         PROJECT_DIR = "${env.WORKSPACE}/webapp-backend"
         VENV_DIR = "${PROJECT_DIR}/venv"
-        REPO_URL = 'https://github.com/DeepakSingh916/backend-flask.git'
+        REPO_URL = 'https://github.com/DeepakSingh916/webapp-backend.git'
     }
 
     stages {
