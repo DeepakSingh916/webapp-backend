@@ -17,7 +17,7 @@ pipeline {
 
         stage('Set Permissions') {
             steps {
-                sh 'sudo chmod -R 777 $WORKSPACE'
+                sh 'chmod -R 777 $WORKSPACE'
             }
         }
 
