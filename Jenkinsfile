@@ -12,6 +12,8 @@ pipeline {
             steps {
                 sh "rm -rf $PROJECT_DIR"
                 sh "git clone $REPO_URL $PROJECT_DIR"
+                sh "chown -R \$(whoami) $PROJECT_DIR"
+                sh "chmod -R u+rwX $PROJECT_DIR"
             }
         }
 
@@ -19,10 +21,10 @@ pipeline {
             steps {
                 dir("$PROJECT_DIR") {
                     sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install flask flask-cors
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install --upgrade pip
+                        pip install flask flask-cors
                     '''
                 }
             }
@@ -31,10 +33,17 @@ pipeline {
         stage('Run Flask App') {
             steps {
                 dir("$PROJECT_DIR") {
-                    // Kill any app running on port 5000
                     sh "fuser -k 5000/tcp || true"
-                    // Run app in background with nohup, binding to 0.0.0.0
-                    sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
+                    // Using setsid for better daemonization
+                    sh "setsid ./venv/bin/python app.py > flask.log 2>&1 < /dev/null &"
+                }
+            }
+        }
+
+        stage('Show Logs') {
+            steps {
+                dir("$PROJECT_DIR") {
+                    sh "tail -n 20 flask.log"
                 }
             }
         }
@@ -46,6 +55,9 @@ pipeline {
         }
         failure {
             echo 'Backend deployment failed.'
+            dir("${env.WORKSPACE}/webapp-backend") {
+                sh "cat flask.log || true"
+            }
         }
     }
 }
