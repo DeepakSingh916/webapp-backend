@@ -8,7 +8,7 @@ pipeline {
     }
 
     stages {
-        
+
         stage('Clone Repo') {
             steps {
                 sh 'rm -rf $WORKSPACE/webapp-backend'
@@ -48,7 +48,7 @@ pipeline {
 
         stage('Api Unit Test') {
             steps {
-               
+                // This stage intentionally left blank
             }
         }
     }
