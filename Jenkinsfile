@@ -1,10 +1,17 @@
 pipeline {
     agent any
 
+    environment {
+        PROJECT_DIR = "${env.WORKSPACE}/webapp-backend"
+        VENV_DIR = "${PROJECT_DIR}/venv"
+        REPO_URL = 'https://github.com/DeepakSingh916/webapp-backend.git'
+    }
+
     stages {
-        stage('Pull Code') {
+        stage('Clone Repo') {
             steps {
-                git 'https://github.com/<your-username>/<your-backend-repo>.git'
+                sh 'rm -rf $WORKSPACE/webapp-backend'
+                sh "git clone $REPO_URL $PROJECT_DIR"
             }
         }
 
@@ -14,23 +21,37 @@ pipeline {
             }
         }
 
-        stage('Setup Virtual Environment') {
+        stage('Setup Python Env') {
             steps {
-                sh '''
-                    python3 -m venv venv
-                    source venv/bin/activate
-                    pip install -r requirements.txt
-                '''
+                dir("$PROJECT_DIR") {
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install --upgrade pip
+                        pip install flask flask-cors
+                    '''
+                }
             }
         }
 
-        stage('Start Flask App') {
+        stage('Run Flask App') {
             steps {
-                sh '''
-                    source venv/bin/activate
-                    nohup python app.py --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
-                '''
+                dir("$PROJECT_DIR") {
+                    // Kill port 5000 more forcefully
+                    sh "sudo fuser -k 5000/tcp || true"
+                    // Start app
+                    sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Backend Flask app deployed successfully!'
+        }
+        failure {
+            echo '❌ Backend deployment failed.'
         }
     }
 }
