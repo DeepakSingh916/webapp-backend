@@ -1,51 +1,36 @@
 pipeline {
     agent any
 
-    environment {
-        PROJECT_DIR = "${env.WORKSPACE}/webapp-backend"
-        VENV_DIR = "${PROJECT_DIR}/venv"
-        REPO_URL = 'https://github.com/DeepakSingh916/webapp-backend.git'
-    }
-
     stages {
-        stage('Clone Repo') {
+        stage('Pull Code') {
             steps {
-                sh 'rm -rf $WORKSPACE/webapp-backend'
-                sh "git clone $REPO_URL $PROJECT_DIR"
+                git 'https://github.com/<your-username>/<your-backend-repo>.git'
             }
         }
 
-        stage('Setup Python Env') {
+        stage('Set Permissions') {
             steps {
-                dir("$PROJECT_DIR") {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install --upgrade pip
-                        pip install flask flask-cors
-                    '''
-                }
+                sh 'sudo chmod -R 777 $WORKSPACE'
             }
         }
 
-        stage('Run Flask App') {
+        stage('Setup Virtual Environment') {
             steps {
-                dir("$PROJECT_DIR") {
-                    // Kill port 5000 more forcefully
-                    sh "sudo fuser -k 5000/tcp || true"
-                    // Start app
-                    sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
-                }
+                sh '''
+                    python3 -m venv venv
+                    source venv/bin/activate
+                    pip install -r requirements.txt
+                '''
             }
         }
-    }
 
-    post {
-        success {
-            echo '✅ Backend Flask app deployed successfully!'
-        }
-        failure {
-            echo '❌ Backend deployment failed.'
+        stage('Start Flask App') {
+            steps {
+                sh '''
+                    source venv/bin/activate
+                    nohup python app.py --host=0.0.0.0 --port=5000 > flask.log 2>&1 &
+                '''
+            }
         }
     }
 }
