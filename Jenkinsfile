@@ -18,12 +18,13 @@ pipeline {
         stage('Setup Python Env') {
             steps {
                 dir("$PROJECT_DIR") {
-                    // Install virtualenv if not installed
-                    sh 'python3 -m pip install --user virtualenv || true'
-                    // Create venv if not exists
-                    sh "[ -d venv ] || python3 -m virtualenv venv"
-                    // Activate venv and install dependencies
                     sh '''
+                    export PATH=$PATH:/home/ubuntu/.local/bin
+        
+                    # Create venv if not exists
+                    [ -d venv ] || virtualenv venv
+        
+                    # Activate venv and install dependencies
                     . venv/bin/activate
                     pip install --upgrade pip
                     pip install flask flask-cors
