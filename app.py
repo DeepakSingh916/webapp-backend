@@ -18,7 +18,7 @@ def login():
 
 @app.route("/home", methods=["GET"])
 def home():
-    return jsonify({"message": "Welcome to web hello"})
+    return jsonify({"message": "Welcome to web hello rani"})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
