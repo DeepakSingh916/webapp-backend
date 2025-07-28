@@ -10,6 +10,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
+                sh 'rm -rf $WORKSPACE/webapp-backend'
                 sh "git clone $REPO_URL $PROJECT_DIR"
             }
         }
