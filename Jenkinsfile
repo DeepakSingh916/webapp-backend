@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+        
         stage('Clone Repo') {
             steps {
                 sh 'rm -rf $WORKSPACE/webapp-backend'
@@ -43,6 +44,10 @@ pipeline {
                     sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
                 }
             }
+        }
+
+        stage('Api Unit Test') {
+            
         }
     }
 
