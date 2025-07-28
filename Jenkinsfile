@@ -30,9 +30,9 @@ pipeline {
         stage('Run Flask App') {
             steps {
                 dir("$PROJECT_DIR") {
-                    // Kill port 5000 if in use
-                    sh "fuser -k 5000/tcp || true"
-                    // Start app using nohup and bind to 0.0.0.0
+                    // Kill port 5000 more forcefully
+                    sh "sudo fuser -k 5000/tcp || true"
+                    // Start app
                     sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
                 }
             }
