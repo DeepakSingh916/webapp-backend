@@ -8,12 +8,23 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup') {
+            steps {
+                script {
+                    // Agar directory exist karti hai toh ownership leke cleanup karo
+                    sh """
+                        if [ -d "$PROJECT_DIR" ]; then
+                            sudo chown -R \$(whoami) $PROJECT_DIR || true
+                            rm -rf $PROJECT_DIR
+                        fi
+                    """
+                }
+            }
+        }
+
         stage('Clone Repo') {
             steps {
-                sh "rm -rf $PROJECT_DIR"
                 sh "git clone $REPO_URL $PROJECT_DIR"
-                sh "chown -R \$(whoami) $PROJECT_DIR"
-                sh "chmod -R u+rwX $PROJECT_DIR"
             }
         }
 
@@ -33,17 +44,10 @@ pipeline {
         stage('Run Flask App') {
             steps {
                 dir("$PROJECT_DIR") {
+                    // Port 5000 pe chal raha app kill karo agar hai
                     sh "fuser -k 5000/tcp || true"
-                    // Using setsid for better daemonization
-                    sh "setsid ./venv/bin/python app.py > flask.log 2>&1 < /dev/null &"
-                }
-            }
-        }
-
-        stage('Show Logs') {
-            steps {
-                dir("$PROJECT_DIR") {
-                    sh "tail -n 20 flask.log"
+                    // App ko background me nohup se start karo
+                    sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
                 }
             }
         }
@@ -55,9 +59,6 @@ pipeline {
         }
         failure {
             echo 'Backend deployment failed.'
-            dir("${env.WORKSPACE}/webapp-backend") {
-                sh "cat flask.log || true"
-            }
         }
     }
 }
