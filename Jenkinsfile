@@ -8,20 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Cleanup') {
-            steps {
-                script {
-                    // Agar directory exist karti hai toh ownership leke cleanup karo
-                    sh """
-                        if [ -d "$PROJECT_DIR" ]; then
-                            sudo chown -R \$(whoami) $PROJECT_DIR || true
-                            rm -rf $PROJECT_DIR
-                        fi
-                    """
-                }
-            }
-        }
-
         stage('Clone Repo') {
             steps {
                 sh "git clone $REPO_URL $PROJECT_DIR"
@@ -44,9 +30,9 @@ pipeline {
         stage('Run Flask App') {
             steps {
                 dir("$PROJECT_DIR") {
-                    // Port 5000 pe chal raha app kill karo agar hai
+                    // Kill port 5000 if in use
                     sh "fuser -k 5000/tcp || true"
-                    // App ko background me nohup se start karo
+                    // Start app using nohup and bind to 0.0.0.0
                     sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
                 }
             }
@@ -55,10 +41,10 @@ pipeline {
 
     post {
         success {
-            echo 'Backend Flask app deployed successfully!'
+            echo '✅ Backend Flask app deployed successfully!'
         }
         failure {
-            echo 'Backend deployment failed.'
+            echo '❌ Backend deployment failed.'
         }
     }
 }
