@@ -48,7 +48,12 @@ pipeline {
 
         stage('Api Unit Test') {
             steps {
-                // This stage intentionally left blank
+                dir("$PROJECT_DIR") {
+                    // Kill port 5000 more forcefully
+                    sh "sudo fuser -k 5000/tcp || true"
+                    // Start app
+                    sh "nohup ./venv/bin/python app.py > flask.log 2>&1 &"
+                }
             }
         }
     }
